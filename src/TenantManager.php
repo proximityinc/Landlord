@@ -57,6 +57,11 @@ class TenantManager
         $this->enabled = false;
     }
 
+    public function isEnabled(): bool
+    {
+        return $this->enabled;
+    }
+
     /**
      * Add a tenant to scope by.
      *
@@ -133,7 +138,7 @@ class TenantManager
      */
     public function applyTenantScopes(Model $model)
     {
-        if (!$this->enabled) {
+        if (!$this->isEnabled()) {
             return;
         }
 
@@ -146,11 +151,13 @@ class TenantManager
 
         $this->modelTenants($model)->each(function ($id, $tenant) use ($model) {
             $model->addGlobalScope($tenant, function (Builder $builder) use ($tenant, $id, $model) {
-                if ($this->getTenants()->first() && $this->getTenants()->first() != $id) {
-                    $id = $this->getTenants()->first();
-                }
+                if ($this->isEnabled()) {
+                    if ($this->getTenants()->first() && $this->getTenants()->first() != $id) {
+                        $id = $this->getTenants()->first();
+                    }
 
-                $builder->where($model->getQualifiedTenant($tenant), '=', $id);
+                    $builder->where($model->getQualifiedTenant($tenant), '=', $id);
+                }
             });
         });
     }
@@ -168,11 +175,13 @@ class TenantManager
                 }
 
                 $model->addGlobalScope($tenant, function (Builder $builder) use ($tenant, $id, $model) {
-                    if ($this->getTenants()->first() && $this->getTenants()->first() != $id) {
-                        $id = $this->getTenants()->first();
-                    }
+                    if ($this->isEnabled()) {
+                        if ($this->getTenants()->first() && $this->getTenants()->first() != $id) {
+                            $id = $this->getTenants()->first();
+                        }
 
-                    $builder->where($model->getQualifiedTenant($tenant), '=', $id);
+                        $builder->where($model->getQualifiedTenant($tenant), '=', $id);
+                    }
                 });
             });
         });
@@ -187,7 +196,7 @@ class TenantManager
      */
     public function newModel(Model $model)
     {
-        if (!$this->enabled) {
+        if (!$this->isEnabled()) {
             return;
         }
 
